@@ -1,2 +1,2 @@
-# lil-mouse-dodger
-A LÖVELY little game about dodging with yo' mouse.
+# lil-ribbons
+A LÖVELY little game about dodging sharp things.
