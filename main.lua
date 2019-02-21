@@ -92,7 +92,6 @@ end
 -- Renders the game
 function love.draw()
   -- Set some drawing filters
-  love.graphics.setDefaultFilter('nearest', 'nearest')
   love.graphics.scale(RENDER_SCALE, RENDER_SCALE)
 
   -- Clear the screen
