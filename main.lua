@@ -1,31 +1,30 @@
--- Constants
-local GAME_WIDTH = 200
-local GAME_HEIGHT = 200
-local RENDER_SCALE = 3
+-- Game constants
+local GAME_WIDTH = 192
+local GAME_HEIGHT = 192
 
--- Timers
+-- Game variables
 local scissorSpawnTimer
-
--- Game objects
 local firstRibbon
 local ribbons
 local scissors
 
--- Images
+-- Assets
 local scissorsImage
 
 -- Initializes the game
 function love.load()
-  -- Load images
-  scissorsImage = loadImage('img/scissors.png')
-
+  -- Set filters
+  love.graphics.setLineStyle('rough')
+  love.graphics.setDefaultFilter('nearest', 'nearest')
+  -- Load assets
+  scissorsImage = love.graphics.newImage('img/scissors.png')
+  -- Reset the game
   resetGame()
 end
 
 -- Updates the game state
 function love.update(dt)
-  local mouseX = love.mouse.getX() / RENDER_SCALE
-  local mouseY = love.mouse.getY() / RENDER_SCALE
+  local mouseX, mouseY = love.mouse.getX(), love.mouse.getY()
 
   -- Spawn scissors periodically
   if firstRibbon.next then
@@ -66,8 +65,8 @@ function love.update(dt)
       moveTowardsPoint(ribbon, ribbon.prev.x, ribbon.prev.y, dt)
     end
     -- Apply the ribbon's velocity
-    ribbon.vx = ribbon.vx * 0.95
-    ribbon.vy = ribbon.vy * 0.95 + 0.2 * dt
+    ribbon.vx = ribbon.vx * 0.6
+    ribbon.vy = ribbon.vy * 0.6
     ribbon.x = ribbon.x + ribbon.vx
     ribbon.y = ribbon.y + ribbon.vy
     -- Keep each ribbon point on screen
@@ -91,15 +90,11 @@ end
 
 -- Renders the game
 function love.draw()
-  -- Set some drawing filters
-  love.graphics.scale(RENDER_SCALE, RENDER_SCALE)
-
   -- Clear the screen
-  love.graphics.setColor(254 / 255, 229 / 255, 95 / 255, 1)
-  love.graphics.rectangle('fill', 0, 0, GAME_WIDTH, GAME_HEIGHT)
+  love.graphics.clear(253 / 255, 217 / 255, 37 / 255)
 
   -- Draw ribbons
-  love.graphics.setColor(13 / 255, 134 / 255, 244 / 255, 1)
+  love.graphics.setColor(12 / 255, 132 / 255, 208 / 255)
   for _, ribbon in ipairs(ribbons) do
     if ribbon.next then
       love.graphics.line(ribbon.x, ribbon.y, ribbon.next.x, ribbon.next.y)
@@ -107,7 +102,7 @@ function love.draw()
   end
 
   -- Draw scissors
-  love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.setColor(1, 1, 1)
   for _, scissor in ipairs(scissors) do
     local sprite
     if scissor.animationTimer < 0.25 then
@@ -117,8 +112,7 @@ function love.draw()
     else
       sprite = 3
     end
-    drawSprite(scissorsImage, sprite, 16, 11, scissor.rotation, scissor.x, scissor.y)
-    -- love.graphics.circle('fill', scissor.x, scissor.y, 3)
+    drawSprite(scissorsImage, 16, 11, sprite, scissor.x - 9, scissor.y - 6, false, false, scissor.rotation)
   end
 end
 
@@ -129,20 +123,17 @@ function love.mousepressed()
   end
 end
 
--- Loads a pixelated image
-function loadImage(filePath)
-  local image = love.graphics.newImage(filePath)
-  image:setFilter('nearest', 'nearest')
-  return image
-end
-
--- Draws a sprite from a sprite sheet image, spriteNum=1 is the upper-leftmost sprite
-function drawSprite(image, spriteNum, spriteWidth, spriteHeight, rotation, x, y)
-  local columns = math.floor(image:getWidth() / spriteWidth)
-  local col = (spriteNum - 1) % columns
-  local row = math.floor((spriteNum - 1) / columns)
-  local quad = love.graphics.newQuad(spriteWidth * col, spriteHeight * row, spriteWidth, spriteHeight, image:getDimensions())
-  love.graphics.draw(image, quad, x, y, rotation, 1, 1, spriteWidth / 2, spriteHeight / 2)
+-- Draws a sprite from a sprite sheet, spriteNum=1 is the upper-leftmost sprite
+function drawSprite(spriteSheetImage, spriteWidth, spriteHeight, sprite, x, y, flipHorizontal, flipVertical, rotation)
+  local width, height = spriteSheetImage:getDimensions()
+  local numColumns = math.floor(width / spriteWidth)
+  local col, row = (sprite - 1) % numColumns, math.floor((sprite - 1) / numColumns)
+  love.graphics.draw(spriteSheetImage,
+    love.graphics.newQuad(spriteWidth * col, spriteHeight * row, spriteWidth, spriteHeight, width, height),
+    x + spriteWidth / 2, y + spriteHeight / 2,
+    rotation or 0,
+    flipHorizontal and -1 or 1, flipVertical and -1 or 1,
+    spriteWidth / 2, spriteHeight / 2)
 end
 
 -- Ribbons are made of multiple points, this function creates one point of a ribbon
@@ -167,13 +158,15 @@ function createScissors()
   else
     y = math.random(0, GAME_HEIGHT)
   end
-  table.insert(scissors, {
+  local scissor = {
     x = x,
     y = y,
     rotation = math.random(2 * math.pi),
     speed = math.random(10, 60),
     animationTimer = 0.00
-  })
+  }
+  table.insert(scissors, scissor)
+  return scissor
 end
 
 -- Move a ribbon towards a point in space
@@ -207,6 +200,6 @@ function resetGame()
   end
   firstRibbon = ribbons[1]
 
-  -- Create scissors
+  -- Create an empty array to hold the scissors
   scissors = {}
 end
