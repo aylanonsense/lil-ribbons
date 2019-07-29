@@ -4,6 +4,6 @@ name: lil ribbons
 username: bridgs
 primaryColor: FDD925
 coverImage: cover-image.png
-description: A lil game about dodging scisso-- ouch!
+description: You're a ribbon and you dodge scissors. Learn how to make a mouse-based obstacle-dodging game!
 dimensions: 192x192
 scaling: step
